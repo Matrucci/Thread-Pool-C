@@ -25,6 +25,8 @@ typedef struct thread_pool
     pthread_t* threads;
     OSQueue* tasks;
     pthread_mutex_t mutex;
+    pthread_cond_t wait;
+    pthread_cond_t waitCon;
 
 } ThreadPool;
 
