@@ -15,7 +15,7 @@ void runThread(void* tp) {
         while (t->numOfTasks == 0 && t->isDestroyed == 0) {
             pthread_cond_wait(&t->wait, &t->mutex);
         }
-        if (t->isDestroyed == 1 && t->isWaitingForTasks == 0) {
+        if (t->isDestroyed) {
             break;
         }
         threadTask = (ThreadTask*) osDequeue(t->tasks);
@@ -86,7 +86,37 @@ ThreadPool* tpCreate(int numOfThreads) {
 }
 
 void tpDestroy(ThreadPool* threadPool, int shouldWaitForTasks) {
+    if (threadPool == NULL) {
+        return NULL;
+    }
 
+    pthread_mutex_lock(&threadPool->mutex);
+    if (shouldWaitForTasks == 0) {
+        ThreadTask* threadTask = osDequeue(threadPool->tasks);
+        while (threadTask != NULL) {
+            free(threadTask);
+            threadTask = osDequeue(threadPool->tasks);
+        }
+    }
+    threadPool->isDestroyed = 1;
+    pthread_cond_broadcast(&(threadPool->wait));
+
+    while (TRUE) {
+        if (threadPool->activeThreads != 0) {
+            pthread_cond_wait(&threadPool->waitCon, &threadPool->mutex);
+        } else {
+            break;
+        }
+    }
+
+    if (threadPool->theadCount) {
+        free(threadPool->threads);
+        osDestroyQueue(threadPool->tasks);
+        pthread_mutex_destroy(&threadPool->mutex);
+        pthread_cond_destroy(&threadPool->waitCon);
+        pthread_cond_destroy(&threadPool->wait);
+    }
+    free(threadPool);
 }
 
 int tpInsertTask(ThreadPool* threadPool, void (*computeFunc) (void *), void* param) {
@@ -97,7 +127,7 @@ int tpInsertTask(ThreadPool* threadPool, void (*computeFunc) (void *), void* par
         return -1;
     }
 
-    pthread_mutex_lock(threadPool->mutex);
+    pthread_mutex_lock(&threadPool->mutex);
     if (threadPool->isDestroyed) {
         return -1;
     }
