@@ -1,15 +1,32 @@
+// Matan Saloniko 318570769
 #ifndef __THREAD_POOL__
 #define __THREAD_POOL__
 
 #include "osqueue.h"
+#include <pthread.h>
+
+typedef struct thread_task {
+    void* function;
+    void* args
+} ThreadTask;
 
 typedef struct thread_pool
 {
- //The field x is here because a struct without fields
- //doesn't compile. Remove it once you add fields of your own
- int x;
- //TODO - FILL THIS WITH YOUR FIELDS
-}ThreadPool;
+    //Thread pool variables.
+    int theadCount;
+    int activeThreads;
+    int numOfTasks;
+
+    //Thread pool flags.
+    int isDestroyed;
+    int isWaitingForTasks;
+
+    //Thread pool functionality variables.
+    pthread_t* threads;
+    OSQueue* tasks;
+    pthread_mutex_t mutex;
+
+} ThreadPool;
 
 ThreadPool* tpCreate(int numOfThreads);
 
