@@ -89,7 +89,7 @@ ThreadPool* tpCreate(int numOfThreads) {
 
 void tpDestroy(ThreadPool* threadPool, int shouldWaitForTasks) {
     if (threadPool == NULL) {
-        return NULL;
+        return;
     }
 
     ThreadTask * threadTask;

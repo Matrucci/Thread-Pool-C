@@ -10,7 +10,7 @@ typedef void (*thread_func_t)(void *arg);
 typedef struct thread_task
 {
     thread_func_t function;
-    void* args
+    void* args;
 } ThreadTask;
 
 typedef struct thread_pool
