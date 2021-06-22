@@ -33,9 +33,11 @@ void runThread(void* tp) {
 
         pthread_mutex_lock(&t->mutex);
         t->activeThreads--;
+        /*
         if (t->isDestroyed == 0 && t->activeThreads == 0 && t->numOfTasks == 0) {
             pthread_cond_signal(&t->waitCon);
         }
+         */
         pthread_mutex_unlock(&t->mutex);
     }
     t->theadCount--;
@@ -100,8 +102,9 @@ void tpDestroy(ThreadPool* threadPool, int shouldWaitForTasks) {
         return;
     }
 
-    ThreadTask * threadTask;
+
     pthread_mutex_lock(&threadPool->mutex);
+    ThreadTask* threadTask;
     threadPool->isWaitingForTasks = shouldWaitForTasks;
     if (shouldWaitForTasks == 0) {
         threadTask = osDequeue(threadPool->tasks);
@@ -110,6 +113,7 @@ void tpDestroy(ThreadPool* threadPool, int shouldWaitForTasks) {
             threadTask = osDequeue(threadPool->tasks);
         }
     } else {
+
         /*
         threadTask = osDequeue(threadPool->tasks);
         while (threadTask != NULL)
@@ -123,22 +127,32 @@ void tpDestroy(ThreadPool* threadPool, int shouldWaitForTasks) {
             pthread_mutex_unlock(&(threadPool->mutex));
             threadTask = osDequeue(threadPool->tasks);
         }
-*/
+        */
     }
     threadPool->isDestroyed = 1;
     pthread_cond_broadcast(&(threadPool->wait));
 
-
     while (TRUE) {
-        if (threadPool->activeThreads != 0) {
+        if (threadPool->theadCount != 0) {
             pthread_cond_wait(&threadPool->waitCon, &threadPool->mutex);
         } else {
             break;
         }
     }
+/*
+    int i;
+    for (i = 0; i < threadPool->theadCount; i++) {
+        pthread_join(threadPool->threads[i], NULL);
+    }
+*/
 
     if (threadPool->theadCount) {
         free(threadPool->threads);
+        ThreadTask* threadTask = osDequeue(threadPool->tasks);
+        while (threadTask != NULL) {
+            free(threadTask);
+            threadTask = osDequeue(threadPool->tasks);
+        }
         osDestroyQueue(threadPool->tasks);
         pthread_mutex_destroy(&threadPool->mutex);
         pthread_cond_destroy(&threadPool->waitCon);
