@@ -105,7 +105,7 @@ validate() {
         # If we reached here and matched=0 it means no matches were found. Print details
         if [ $matched -eq 0 -a $general_error -ne 1 ]
         then
-            print_error_header_for_command "TEST_FILE=\$test_file ; ARGS=\"\$arguments\""
+            print_error_header_for_command "TEST_FILE=$test_file ; ARGS=\"$arguments\""
             print_actual_output "$result"
 
             if [ $# -gt 1 ]
