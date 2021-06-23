@@ -9,6 +9,7 @@
 void hello (void* a)
 {
     sleep((int)a);
+    //printf("hello %d\n", (int)a);
     printf("hello\n");
 }
 
