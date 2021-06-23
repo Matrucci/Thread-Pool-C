@@ -52,7 +52,7 @@ void runThread(void* tp) {
     t->theadCount--;
     pthread_cond_signal(&(t->waitCon));
     pthread_mutex_unlock(&(t->mutex));
-    pthread_exit(NULL);
+    //pthread_exit(NULL);
 }
 
 /**************************************************************
@@ -167,6 +167,7 @@ void tpDestroy(ThreadPool* threadPool, int shouldWaitForTasks) {
 
     if (threadPool->theadCount) {
         free(threadPool->threads);
+
         ThreadTask* threadTask = osDequeue(threadPool->tasks);
         while (threadTask != NULL) {
             free(threadTask);
